@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>오해연 · PM 포트폴리오</title>
+<meta name="description" content="문제를 재정의하고 사용자 검증으로 증명하는 주니어 PM 오해연의 이력서와 포트폴리오입니다.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!-- ▼ GA4: 아래 두 곳의 G-XXXXXXXXXX 를 측정 ID로 교체 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>
+<!-- ▲ GA4 -->
+
+<style>
+  :root{--coral:#F8604E;--bg:#141414;--card:#1E1E1E;--line:#2E2E2E;--txt:#F2F2F2;--sub:#9A9A9A;}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{font-family:'Pretendard',sans-serif;background:#F4F1EE;color:#1E1E1E;display:flex;}
+
+  /* 사이드바 */
+  .side{width:264px;flex-shrink:0;background:var(--bg);color:var(--txt);display:flex;flex-direction:column;padding:36px 24px;height:100vh;position:sticky;top:0;}
+  .side .name{font-size:24px;font-weight:800;}
+  .side .role{font-size:13px;color:var(--sub);margin-top:6px;line-height:1.5;}
+  .menu{margin-top:36px;display:flex;flex-direction:column;gap:6px;}
+  .menu button{all:unset;cursor:pointer;font-size:15px;font-weight:600;color:#CFCFCF;padding:12px 14px;border-radius:8px;display:flex;align-items:center;gap:10px;}
+  .menu button .dot{width:6px;height:6px;border-radius:2px;background:#4A4A4A;flex-shrink:0;}
+  .menu button.on{background:var(--card);color:#fff;}
+  .menu button.on .dot{background:var(--coral);}
+  .side .foot{margin-top:auto;font-size:12.5px;color:var(--sub);line-height:1.8;border-top:1px solid var(--line);padding-top:18px;}
+  .side .foot a{color:#CFCFCF;text-decoration:none;}
+
+  /* 본문 공통 */
+  .main{flex:1;display:flex;flex-direction:column;height:100vh;min-width:0;}
+  .bar{display:flex;justify-content:space-between;align-items:center;padding:20px 32px;background:#fff;border-bottom:1px solid #E4E0DC;}
+  .bar .title{font-size:18px;font-weight:800;}
+  .bar .btns{display:flex;gap:10px;}
+  .bar a{text-decoration:none;font-size:13.5px;font-weight:700;padding:10px 18px;border-radius:8px;}
+  .bar .dl{background:#1E1E1E;color:#fff;}
+  .bar .nw{border:1.5px solid #1E1E1E;color:#1E1E1E;background:#fff;}
+
+  /* PDF.js 뷰어 */
+  .viewer{flex:1;overflow:auto;background:#4A4E52;padding:28px 16px;}
+  .pdf-page{position:relative;margin:0 auto 20px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);}
+  .pdf-page canvas{display:block;width:100%;height:100%;}
+  .pdf-page a.hot{position:absolute;display:block;z-index:2;}
+  .pdf-loading{color:#CFCFCF;text-align:center;font-size:14px;padding:40px 0;}
+
+  /* 작업한 문서 뷰 */
+  .works{flex:1;overflow-y:auto;padding:28px 32px;display:none;flex-direction:column;}
+  .works .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+  .wcard{background:#fff;border:1px solid #E4E0DC;border-radius:12px;padding:22px;cursor:pointer;transition:border-color .15s;}
+  .wcard:hover{border-color:#1E1E1E;}
+  .wcard.sel{border:2px solid var(--coral);}
+  .wcard .proj{display:inline-block;font-size:11.5px;font-weight:700;color:var(--coral);border:1px solid var(--coral);border-radius:20px;padding:2px 10px;}
+  .wcard .w-title{font-size:16.5px;font-weight:800;margin-top:12px;}
+  .wcard .w-desc{font-size:13.5px;color:#777;margin-top:6px;line-height:1.55;}
+  .wcard .w-actions{margin-top:16px;display:flex;gap:8px;}
+  .wcard .w-actions a,.wcard .w-actions span{font-size:12.5px;font-weight:700;padding:8px 14px;border-radius:7px;text-decoration:none;}
+  .wcard .prev-btn{background:#1E1E1E;color:#fff;}
+  .wcard .fig-btn{border:1.5px solid #1E1E1E;color:#1E1E1E;}
+  .preview{margin-top:24px;display:none;flex-direction:column;flex:1;min-height:540px;}
+  .preview .p-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .preview .p-title{font-size:15px;font-weight:800;}
+  .preview .p-hint{font-size:12.5px;color:#999;}
+  .preview iframe{width:100%;flex:1;min-height:500px;border:1px solid #E4E0DC;border-radius:12px;background:#fff;}
+
+  /* 모바일 */
+  @media (max-width:768px){
+    body{flex-direction:column;}
+    .side{width:100%;height:auto;position:static;padding:24px 20px;}
+    .menu{flex-direction:row;flex-wrap:wrap;margin-top:20px;}
+    .menu button{padding:10px 12px;font-size:13.5px;}
+    .side .foot{display:none;}
+    .main{height:auto;}
+    .bar{flex-direction:column;gap:12px;align-items:flex-start;}
+    .viewer{height:80vh;padding:16px 8px;}
+    .works{padding:20px 16px;}
+    .preview iframe{min-height:70vh;}
+  }
+</style>
+</head>
+<body>
+
+<aside class="side">
+  <div class="name">오해연</div>
+  <div class="role">문제를 재정의하고<br>사용자 검증으로 증명하는 주니어 PM</div>
+  <nav class="menu">
+    <button id="m-resume" class="on" onclick="show('resume')"><span class="dot"></span>이력서</button>
+    <button id="m-portfolio" onclick="show('portfolio')"><span class="dot"></span>포트폴리오</button>
+    <button id="m-appendix" onclick="show('appendix')"><span class="dot"></span>포트폴리오 부록</button>
+    <button id="m-works" onclick="show('works')"><span class="dot"></span>작업한 문서</button>
+  </nav>
+  <div class="foot">
+    ohheayeon010221@gmail.com<br>
+    010-4628-3302
+  </div>
+</aside>
+
+<main class="main">
+  <div class="bar">
+    <div class="title" id="bar-title">이력서</div>
+    <div class="btns" id="bar-btns">
+      <a class="nw" id="btn-new" href="docs/resume.pdf" target="_blank" onclick="track('open_newtab')">새 탭에서 열기</a>
+      <a class="dl" id="btn-dl" href="docs/resume.pdf" download onclick="track('download')">다운로드</a>
+    </div>
+  </div>
+
+  <!-- PDF.js 뷰어 -->
+  <div class="viewer" id="pdfview"></div>
+
+  <!-- 작업한 문서 뷰 -->
+  <div class="works" id="worksview">
+    <div class="cards" id="cards"></div>
+    <div class="preview" id="preview">
+      <div class="p-head">
+        <div class="p-title" id="p-title"></div>
+        <div class="p-hint">드래그로 이동, 스크롤로 확대·축소할 수 있습니다</div>
+      </div>
+      <iframe id="figframe" src="" allowfullscreen></iframe>
+    </div>
+  </div>
+</main>
+
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+  var docs = {
+    resume:    {title:'이력서',          file:'docs/resume.pdf'},
+    portfolio: {title:'포트폴리오',      file:'docs/portfolio.pdf'},
+    appendix:  {title:'포트폴리오 부록', file:'docs/appendix.pdf'}
+  };
+
+  var works = [
+    {
+      id:'spec',
+      proj:'카카오페이지',
+      title:'개발 전달용 화면 명세서',
+      desc:'개발 담당과 3차 왕복으로 확정한 MVP 화면 명세. 1차 시안과 최종 시안, 수정 구간을 구분해 정리했습니다.',
+      url:'https://www.figma.com/design/v1TuWfPak5qEmGQgnQ06za/%EC%B5%9C%EC%A2%85-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8_%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4_%EB%B6%80%EB%A1%9D?node-id=0-1'
+    },
+    {
+      id:'funcdef',
+      proj:'카카오페이지',
+      title:'화면 기능별 정의서',
+      desc:'화면 단위로 기능의 동작과 조건을 정의한 문서입니다.',
+      url:'https://www.figma.com/design/v1TuWfPak5qEmGQgnQ06za/%EC%B5%9C%EC%A2%85-%ED%94%84%EB%A1%9C%EC%A0%9D%ED%8A%B8_%ED%8F%AC%ED%8A%B8%ED%8F%B4%EB%A6%AC%EC%98%A4_%EB%B6%80%EB%A1%9D?node-id=16-80'
+    }
+  ];
+
+  var current = 'resume';
+  var loadingTask = null;
+  var observer = null;
+  var loadSeq = 0;
+
+  function show(key){
+    current = key;
+    ['resume','portfolio','appendix','works'].forEach(function(k){
+      document.getElementById('m-'+k).className = (k===key) ? 'on' : '';
+    });
+    var isWorks = (key === 'works');
+    document.getElementById('pdfview').style.display = isWorks ? 'none' : 'block';
+    document.getElementById('worksview').style.display = isWorks ? 'flex' : 'none';
+    document.getElementById('bar-btns').style.display = isWorks ? 'none' : 'flex';
+    if (isWorks) {
+      document.getElementById('bar-title').textContent = '작업한 문서';
+    } else {
+      var d = docs[key];
+      document.getElementById('bar-title').textContent = d.title;
+      document.getElementById('btn-new').href = d.file;
+      document.getElementById('btn-dl').href = d.file;
+      loadDoc(d.file);
+    }
+    if (typeof gtag === 'function') gtag('event', 'view_doc', {doc: key});
+  }
+
+  function track(action){
+    if (typeof gtag === 'function') gtag('event', action, {doc: current});
+  }
+
+  /* ---------- PDF.js 렌더링 ---------- */
+  function loadDoc(file){
+    var seq = ++loadSeq;
+    var container = document.getElementById('pdfview');
+    container.innerHTML = '<div class="pdf-loading">문서를 불러오는 중입니다…</div>';
+    if (observer) { observer.disconnect(); observer = null; }
+    if (loadingTask) { try { loadingTask.destroy(); } catch(e){} }
+
+    loadingTask = pdfjsLib.getDocument(file);
+    loadingTask.promise.then(function(pdf){
+      if (seq !== loadSeq) return;
+      container.innerHTML = '';
+      var cssWidth = Math.min(container.clientWidth - 32, 1400);
+
+      observer = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if (entry.isIntersecting && !entry.target.dataset.rendered) {
+            entry.target.dataset.rendered = '1';
+            renderPage(pdf, parseInt(entry.target.dataset.page), entry.target, seq);
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {root: container, rootMargin: '600px'});
+
+      for (var i = 1; i <= pdf.numPages; i++) {
+        var wrap = document.createElement('div');
+        wrap.className = 'pdf-page';
+        wrap.dataset.page = i;
+        wrap.style.width = cssWidth + 'px';
+        wrap.style.height = Math.round(cssWidth * 1080/1920) + 'px'; /* 임시 비율, 렌더 시 보정 */
+        container.appendChild(wrap);
+        observer.observe(wrap);
+      }
+    }).catch(function(err){
+      if (seq !== loadSeq) return;
+      container.innerHTML = '<div class="pdf-loading">문서를 불러오지 못했습니다. 새로고침해 주세요.</div>';
+    });
+  }
+
+  function renderPage(pdf, num, wrap, seq){
+    pdf.getPage(num).then(function(page){
+      if (seq !== loadSeq) return;
+      var cssWidth = parseFloat(wrap.style.width);
+      var base = page.getViewport({scale: 1});
+      var scale = cssWidth / base.width;
+      var cssHeight = Math.round(base.height * scale);
+      wrap.style.height = cssHeight + 'px';
+
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      var vp = page.getViewport({scale: scale * dpr});
+      var canvas = document.createElement('canvas');
+      canvas.width = Math.floor(vp.width);
+      canvas.height = Math.floor(vp.height);
+      wrap.appendChild(canvas);
+      page.render({canvasContext: canvas.getContext('2d'), viewport: vp});
+
+      /* 링크 오버레이: 전부 새 탭 */
+      var cssVp = page.getViewport({scale: scale});
+      page.getAnnotations().then(function(annots){
+        if (seq !== loadSeq) return;
+        annots.forEach(function(a){
+          if (a.subtype !== 'Link' || !a.url) return;
+          var r = pdfjsLib.Util.normalizeRect(cssVp.convertToViewportRectangle(a.rect));
+          var link = document.createElement('a');
+          link.className = 'hot';
+          link.href = a.url;
+          link.target = '_blank';
+          link.rel = 'noopener';
+          link.style.left = r[0] + 'px';
+          link.style.top = r[1] + 'px';
+          link.style.width = (r[2]-r[0]) + 'px';
+          link.style.height = (r[3]-r[1]) + 'px';
+          link.addEventListener('click', function(){
+            if (typeof gtag === 'function') gtag('event', 'pdf_link', {doc: current, url: a.url});
+          });
+          wrap.appendChild(link);
+        });
+      });
+    });
+  }
+
+  /* ---------- 작업한 문서 카드 ---------- */
+  var cardsEl = document.getElementById('cards');
+  works.forEach(function(w){
+    var card = document.createElement('div');
+    card.className = 'wcard';
+    card.id = 'card-' + w.id;
+    card.innerHTML =
+      '<span class="proj">' + w.proj + '</span>' +
+      '<div class="w-title">' + w.title + '</div>' +
+      '<div class="w-desc">' + w.desc + '</div>' +
+      '<div class="w-actions">' +
+        '<span class="prev-btn">미리보기</span>' +
+        '<a class="fig-btn" href="' + w.url + '" target="_blank" rel="noopener" onclick="event.stopPropagation();figOpen(\'' + w.id + '\')">피그마에서 열기</a>' +
+      '</div>';
+    card.onclick = function(){ preview(w.id); };
+    cardsEl.appendChild(card);
+  });
+
+  function preview(id){
+    var w = works.find(function(x){ return x.id === id; });
+    works.forEach(function(x){
+      document.getElementById('card-'+x.id).classList.toggle('sel', x.id === id);
+    });
+    document.getElementById('preview').style.display = 'flex';
+    document.getElementById('p-title').textContent = w.title;
+    document.getElementById('figframe').src =
+      'https://www.figma.com/embed?embed_host=share&url=' + encodeURIComponent(w.url);
+    if (typeof gtag === 'function') gtag('event', 'figma_preview', {doc: id});
+    document.getElementById('preview').scrollIntoView({behavior:'smooth'});
+  }
+
+  function figOpen(id){
+    if (typeof gtag === 'function') gtag('event', 'figma_open', {doc: id});
+  }
+
+  /* 초기 로드 */
+  loadDoc(docs.resume.file);
+</script>
+</body>
+</html>
