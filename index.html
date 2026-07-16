@@ -194,28 +194,36 @@
     loadingTask = pdfjsLib.getDocument(file);
     loadingTask.promise.then(function(pdf){
       if (seq !== loadSeq) return;
-      container.innerHTML = '';
-      var cssWidth = Math.min(container.clientWidth - 32, 1400);
+      return pdf.getPage(1).then(function(p1){
+        if (seq !== loadSeq) return;
+        container.innerHTML = '';
+        var vp1 = p1.getViewport({scale: 1});
+        var portrait = vp1.height > vp1.width;
+        /* 세로 문서(이력서)는 좁게, 가로 장표(포폴)는 넓게 */
+        var maxW = portrait ? 820 : 1400;
+        var cssWidth = Math.min(container.clientWidth - 32, maxW);
+        var ratio = vp1.height / vp1.width;
 
-      observer = new IntersectionObserver(function(entries){
-        entries.forEach(function(entry){
-          if (entry.isIntersecting && !entry.target.dataset.rendered) {
-            entry.target.dataset.rendered = '1';
-            renderPage(pdf, parseInt(entry.target.dataset.page), entry.target, seq);
-            observer.unobserve(entry.target);
-          }
-        });
-      }, {root: container, rootMargin: '600px'});
+        observer = new IntersectionObserver(function(entries){
+          entries.forEach(function(entry){
+            if (entry.isIntersecting && !entry.target.dataset.rendered) {
+              entry.target.dataset.rendered = '1';
+              renderPage(pdf, parseInt(entry.target.dataset.page), entry.target, seq);
+              observer.unobserve(entry.target);
+            }
+          });
+        }, {root: container, rootMargin: '600px'});
 
-      for (var i = 1; i <= pdf.numPages; i++) {
-        var wrap = document.createElement('div');
-        wrap.className = 'pdf-page';
-        wrap.dataset.page = i;
-        wrap.style.width = cssWidth + 'px';
-        wrap.style.height = Math.round(cssWidth * 1080/1920) + 'px'; /* 임시 비율, 렌더 시 보정 */
-        container.appendChild(wrap);
-        observer.observe(wrap);
-      }
+        for (var i = 1; i <= pdf.numPages; i++) {
+          var wrap = document.createElement('div');
+          wrap.className = 'pdf-page';
+          wrap.dataset.page = i;
+          wrap.style.width = cssWidth + 'px';
+          wrap.style.height = Math.round(cssWidth * ratio) + 'px'; /* 임시 비율, 렌더 시 보정 */
+          container.appendChild(wrap);
+          observer.observe(wrap);
+        }
+      });
     }).catch(function(err){
       if (seq !== loadSeq) return;
       container.innerHTML = '<div class="pdf-loading">문서를 불러오지 못했습니다. 새로고침해 주세요.</div>';
